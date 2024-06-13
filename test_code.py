@@ -9,6 +9,9 @@ import string
 conn = sqlite3.connect('naita.db')
 c = conn.cursor()
 
+  njklk
+
+
 # Create tables
 c.execute('''CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
