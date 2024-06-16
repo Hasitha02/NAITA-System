@@ -51,9 +51,18 @@ app = ctk.CTk()
 app.geometry("1080x600")
 app.title("Create New Account")
 
+# Set window icon
+app.iconbitmap("naita_icon.ico")
+
 # Left Frame for the form
 frame_left = ctk.CTkFrame(master=app, width=300, height=400, corner_radius=10, fg_color="#ddd")
 frame_left.place(relx=0, rely=0, relwidth=0.5, relheight=1)
+
+# Add logo to the left frame
+logo_image = Image.open("naita_icon2.jpg")
+logo_photo = ctk.CTkImage(light_image=logo_image, dark_image=logo_image, size=(100, 100))
+label_logo = ctk.CTkLabel(master=frame_left, text="", image=logo_photo)
+label_logo.place(x=220, y=10)
 
 # Right Frame for the red background
 frame_right = ctk.CTkFrame(master=app, width=300, height=400, corner_radius=10)
@@ -67,38 +76,38 @@ label_image.place(relx=0, rely=0, relwidth=1, relheight=1)
 
 # Create and place the labels and entry fields
 label_first_name = ctk.CTkLabel(master=frame_left, text="First Name:", text_color="black", font=("Arial", 14))
-label_first_name.place(x=20, y=40)
+label_first_name.place(x=20, y=130)
 entry_first_name = ctk.CTkEntry(master=frame_left, placeholder_text="Enter your first name", width=220, height=30)
-entry_first_name.place(x=170, y=40)
+entry_first_name.place(x=170, y=130)
 
 label_last_name = ctk.CTkLabel(master=frame_left, text="Last Name:", text_color="black", font=("Arial", 14))
-label_last_name.place(x=20, y=100)
+label_last_name.place(x=20, y=190)
 entry_last_name = ctk.CTkEntry(master=frame_left, placeholder_text="Enter your last name", width=220, height=30)
-entry_last_name.place(x=170, y=100)
+entry_last_name.place(x=170, y=190)
 
 label_email = ctk.CTkLabel(master=frame_left, text="Email:", text_color="black", font=("Arial", 14))
-label_email.place(x=20, y=160)
+label_email.place(x=20, y=250)
 entry_email = ctk.CTkEntry(master=frame_left, placeholder_text="Enter your email", width=220, height=30)
-entry_email.place(x=170, y=160)
+entry_email.place(x=170, y=250)
 
 label_password = ctk.CTkLabel(master=frame_left, text="Password:", text_color="black", font=("Arial", 14))
-label_password.place(x=20, y=220)
+label_password.place(x=20, y=310)
 entry_password = ctk.CTkEntry(master=frame_left, placeholder_text="Enter your password", show="*", width=220, height=30)
-entry_password.place(x=170, y=220)
+entry_password.place(x=170, y=310)
 
 label_confirm_password = ctk.CTkLabel(master=frame_left, text="Confirm Password:", text_color="black", font=("Arial", 14))
-label_confirm_password.place(x=20, y=280)
+label_confirm_password.place(x=20, y=370)
 entry_confirm_password = ctk.CTkEntry(master=frame_left, placeholder_text="Confirm your password", show="*", width=220, height=30)
-entry_confirm_password.place(x=170, y=280)
+entry_confirm_password.place(x=170, y=370)
 
 # Create and place the Show Password checkbox
 show_password_var = tk.BooleanVar()
 checkbox_show_password = ctk.CTkCheckBox(master=frame_left, text="Show Password", text_color="black", variable=show_password_var, command=toggle_password)
-checkbox_show_password.place(x=170, y=320)
+checkbox_show_password.place(x=170, y=420)
 
 # Create and place the Create Account button
 button_create_account = ctk.CTkButton(master=frame_left, text="Create Account", command=create_account, width=120, height=30, fg_color="crimson")
-button_create_account.place(x=170, y=360)
+button_create_account.place(x=170, y=460)
 
 # Create and place the Help button
 button_help = ctk.CTkButton(master=frame_left, text="Help", command=show_help, width=100, height=30, fg_color="crimson")
