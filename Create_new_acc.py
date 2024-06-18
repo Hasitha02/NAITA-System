@@ -3,11 +3,46 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import Image
 import re
+import mysql.connector
+from mysql.connector import Error
 
 # Function to validate email
 def is_valid_email(email):
     pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
     return re.match(pattern, email) is not None
+
+# Function to connect to the MySQL database
+def connect_to_db():
+    try:
+        connection = mysql.connector.connect(
+            host='localhost',  # Replace with your MySQL host
+            database='NAITA',  # Replace with your MySQL database
+            user='root',       # Replace with your MySQL username
+            password='prabhashi915' # Replace with your MySQL password
+        )
+        if connection.is_connected():
+            return connection
+    except Error as e:
+        messagebox.showerror("Database Error", f"Error connecting to MySQL: {e}")
+        return None
+
+# Function to insert data into the database
+def insert_into_db(first_name, last_name, email, password):
+    connection = connect_to_db()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            cursor.execute("USE NAITA;")
+            query = """INSERT INTO CreateAccount (fname, lname, username, email, password)
+                       VALUES (%s, %s, %s, %s, %s)"""
+            cursor.execute(query, (first_name, last_name, email.split('@')[0], email, password))
+            connection.commit()
+            cursor.close()
+            connection.close()
+            return True
+        except Error as e:
+            messagebox.showerror("Database Error", f"Error inserting data into MySQL: {e}")
+            return False
 
 # Function to handle create account button click
 def create_account():
@@ -29,9 +64,10 @@ def create_account():
         messagebox.showerror("Error", "Passwords do not match.")
         return
 
-    messagebox.showinfo("Success", "Account created successfully!")
-    if all([first_name, last_name, email, password, confirm_password]):
-        ctk.CTk.destroy(app)
+    # Insert data into the database
+    if insert_into_db(first_name, last_name, email, password):
+        messagebox.showinfo("Success", "Account created successfully!")
+        app.destroy()
 
 # Function to handle help button click
 def show_help():
