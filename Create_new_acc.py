@@ -18,7 +18,7 @@ def connect_to_db():
             host='localhost',  # Replace with your MySQL host
             database='NAITA',  # Replace with your MySQL database
             user='root',       # Replace with your MySQL username
-            password='prabhashi915' # Replace with your MySQL password
+            password='hasitha0214' # Replace with your MySQL password
         )
         if connection.is_connected():
             return connection
@@ -27,7 +27,7 @@ def connect_to_db():
         return None
 
 # Function to insert data into the database
-def insert_into_db(first_name, last_name, email, password):
+def insert_into_db(first_name, last_name, username, email, password):
     connection = connect_to_db()
     if connection:
         try:
@@ -35,7 +35,7 @@ def insert_into_db(first_name, last_name, email, password):
             cursor.execute("USE NAITA;")
             query = """INSERT INTO CreateAccount (fname, lname, username, email, password)
                        VALUES (%s, %s, %s, %s, %s)"""
-            cursor.execute(query, (first_name, last_name, email.split('@')[0], email, password))
+            cursor.execute(query, (first_name, last_name, username, email, password))
             connection.commit()
             cursor.close()
             connection.close()
@@ -48,11 +48,13 @@ def insert_into_db(first_name, last_name, email, password):
 def create_account():
     first_name = entry_first_name.get()
     last_name = entry_last_name.get()
+    username = entry_username.get()
     email = entry_email.get()
     password = entry_password.get()
     confirm_password = entry_confirm_password.get()
 
-    if not all([first_name, last_name, email, password, confirm_password]):
+
+    if not all([first_name, last_name, email, password, confirm_password, username]):
         messagebox.showerror("Error", "All fields are required.")
         return
 
@@ -121,29 +123,34 @@ label_last_name.place(x=20, y=190)
 entry_last_name = ctk.CTkEntry(master=frame_left, placeholder_text="Enter your last name", width=220, height=30)
 entry_last_name.place(x=170, y=190)
 
+label_username = ctk.CTkLabel(master=frame_left, text="Username:", text_color="black", font=("Arial", 14))
+label_username.place(x=20, y=250)
+entry_username = ctk.CTkEntry(master=frame_left, placeholder_text="Enter your username", width=220, height=30)
+entry_username.place(x=170, y=250)
+
 label_email = ctk.CTkLabel(master=frame_left, text="Email:", text_color="black", font=("Arial", 14))
-label_email.place(x=20, y=250)
+label_email.place(x=20, y=310)
 entry_email = ctk.CTkEntry(master=frame_left, placeholder_text="Enter your email", width=220, height=30)
-entry_email.place(x=170, y=250)
+entry_email.place(x=170, y=310)
 
 label_password = ctk.CTkLabel(master=frame_left, text="Password:", text_color="black", font=("Arial", 14))
-label_password.place(x=20, y=310)
+label_password.place(x=20, y=370)
 entry_password = ctk.CTkEntry(master=frame_left, placeholder_text="Enter your password", show="*", width=220, height=30)
-entry_password.place(x=170, y=310)
+entry_password.place(x=170, y=370)
 
 label_confirm_password = ctk.CTkLabel(master=frame_left, text="Confirm Password:", text_color="black", font=("Arial", 14))
-label_confirm_password.place(x=20, y=370)
+label_confirm_password.place(x=20, y=420)
 entry_confirm_password = ctk.CTkEntry(master=frame_left, placeholder_text="Confirm your password", show="*", width=220, height=30)
-entry_confirm_password.place(x=170, y=370)
+entry_confirm_password.place(x=170, y=420)
 
 # Create and place the Show Password checkbox
 show_password_var = tk.BooleanVar()
 checkbox_show_password = ctk.CTkCheckBox(master=frame_left, text="Show Password", text_color="black", variable=show_password_var, command=toggle_password)
-checkbox_show_password.place(x=170, y=420)
+checkbox_show_password.place(x=170, y=470)
 
 # Create and place the Create Account button
 button_create_account = ctk.CTkButton(master=frame_left, text="Create Account", command=create_account, width=120, height=30, fg_color="crimson")
-button_create_account.place(x=170, y=460)
+button_create_account.place(x=170, y=520)
 
 # Create and place the Help button
 button_help = ctk.CTkButton(master=frame_left, text="Help", command=show_help, width=100, height=30, fg_color="crimson")
