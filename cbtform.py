@@ -818,15 +818,15 @@ def form():
     button_frame.pack(pady=10, padx=20, fill="x", expand=True, anchor="center")
 
     back_button = ctk.CTkButton(button_frame, text="Back", font=("Arial", 14, "bold"), command=back,
-                                 fg_color="#007BFF", text_color="white")
+                                 fg_color="crimson", text_color="white")
     back_button.pack(side=LEFT, padx=20, pady=10)
 
     clear_button = ctk.CTkButton(button_frame, text="Clear", font=("Arial", 14, "bold"), command=clear_form,
-                                  fg_color="#007BFF", text_color="white")
+                                  fg_color="crimson", text_color="white")
     clear_button.pack(side=LEFT, padx=20, pady=10)
 
     submit_button = ctk.CTkButton(button_frame, text="Submit", font=("Arial", 14, "bold"), command=submit,
-                                 fg_color="#DC3545", text_color="white")
+                                 fg_color="crimson", text_color="white")
     submit_button.pack(side=LEFT, padx=20, pady=10)
 
 
