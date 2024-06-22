@@ -28,7 +28,7 @@ def insert_into_db(*args):
         try:
             cursor = connection.cursor()
             cursor.execute("USE NAITA;")
-            query = """INSERT INTO EBTSD (category, district, dateOfRegistration, indexNumber, name, fullName, dateofBirth, gender, NIC,
+            query = """INSERT INTO CBTSD (category, district, dateOfRegistration, indexNumber, name, fullName, dateofBirth, gender, NIC,
                        telephoneNumber, NAITAIDnumber, dropOut, dropOutDate, addressNo, addressFLine, addressLLine, nameofEstablishment, establishmentType,
                        establishmentAddressDivision, establishmentAddressDistrict, establishmentTelephone, DSDivision, establishmentCode,
                        sectorName, trade, tradeCode, mode, NVQLevel, inspectorName, commencementDate, scheduleDateCompletion, signatureTM, remark)
@@ -103,7 +103,7 @@ def form():
             dropout_date_value = dropout_date.get() if dropout_var.get() == "Yes" else None
 
             if insert_into_db(
-                    "EBT - Enterprise Based Training", district_var.get(), date_of_registration.get(),
+                    "CBT - Center Based Training", district_var.get(), date_of_registration.get(),
                     index_number.get(),
                     name.get(), full_name.get(), date_of_birth.get(), gender_var.get(), nic.get(),
                     telephone_number.get(),
@@ -156,7 +156,7 @@ def form():
     section1_frame = ctk.CTkFrame(scrollable_frame, fg_color="#f0f0f0")  # Whitish background for sections
     section1_frame.pack(pady=10, padx=20, fill="x", expand=True, anchor="center")
 
-    header1 = ctk.CTkLabel(section1_frame, text="Student Registration Form - EBT    ", font=("Arial", 29, "bold"),
+    header1 = ctk.CTkLabel(section1_frame, text="Student Registration Form - CBT    ", font=("Arial", 29, "bold"),
                            fg_color="#f0f0f0", text_color="black")
     header1.grid(row=0, column=0, columnspan=2, pady=10, padx=150, sticky="w")  # Center header
 
@@ -169,7 +169,7 @@ def form():
                                   text_color="black", anchor="w")
     category_label.grid(row=2, column=0, padx=5, pady=5, sticky="w")
 
-    category_value = ctk.CTkLabel(section1_frame, text="EBT - Enterprise Based Training", font=("Arial", 14),
+    category_value = ctk.CTkLabel(section1_frame, text="CBT - Center Based Training", font=("Arial", 14),
                                   text_color="black", anchor="w")
     category_value.grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
