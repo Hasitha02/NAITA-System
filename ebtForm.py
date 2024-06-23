@@ -1,13 +1,13 @@
 import customtkinter as ctk
-from tkinter import StringVar, Frame, Scrollbar, Canvas, VERTICAL, RIGHT, LEFT, Y, BOTH, messagebox
+from tkinter import StringVar, Frame, Scrollbar, Canvas, VERTICAL, RIGHT, LEFT, Y, BOTH, messagebox, filedialog
 from tkcalendar import DateEntry
 import mysql.connector
 from mysql.connector import Error
 import re
-
 from openpyxl import Workbook
-
-
+import datetime
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas as pdf_canvas
 
 def connect_to_db():
     try:
@@ -40,8 +40,8 @@ def insert_into_db(*args):
             cursor.close()
             connection.close()
             return True
-        except Error as e:
-            messagebox.showerror("Database Error", f"Error inserting data into MySQL: {e}")
+        except Error:
+            messagebox.showerror("Database Error", f"Error inserting data into the Database. Please check again.")
             return False
 
 
@@ -49,7 +49,7 @@ def form():
     # Create the main application window
     app = ctk.CTk()
     app.title("Form")
-    app.geometry("1080x1200")
+    app.geometry("1080x706")
 
     # Create a frame for the form
     form_frame = ctk.CTkFrame(app, fg_color="white")  # Whitish background
@@ -125,9 +125,9 @@ def form():
                     messagebox.showinfo("Success", "Form submitted successfully.")
             else:
                 messagebox.showinfo("Submission Cancelled", "Form submission cancelled.")
+
     def back():
         print("a")
-
     def clear_form():
         # Ask for confirmation
         answer = messagebox.askyesno("Confirmation", "Are you sure you want to clear all fields?")
@@ -153,50 +153,104 @@ def form():
     scrollable_frame.bind("<Configure>", on_frame_configure)
     canvas.bind_all("<MouseWheel>", on_mouse_wheel)
 
+    def format_date(date_value):
+        # Ensure date_value is a valid date
+        if date_value:
+            if isinstance(date_value, str):
+                # If date_value is a string, try to convert it to datetime
+                try:
+                    date_value = datetime.datetime.strptime(date_value, '%Y-%m-%d').date()
+                except ValueError:
+                    return None
+            return date_value.strftime('%Y-%m-%d')
+        else:
+            return None
+
+    def save_to_pdf(file_path, headers, data):
+        c = pdf_canvas.Canvas(file_path, pagesize=letter)
+        width, height = letter
+
+        x_offset = 40
+        y_offset = height - 40
+        line_height = 20
+
+        # Write headers and data
+        for header, datum in zip(headers, data[0]):
+            c.drawString(x_offset, y_offset, f"{header}: {datum}")
+            y_offset -= line_height
+
+        c.save()
+
     def print_to_excel():
         # Ask for confirmation
-        answer = messagebox.askyesno("Confirmation", "Are you sure you want to print data to Excel?")
+        answer = messagebox.askyesno("Confirmation", "Are you sure you want to print the file?")
 
         if answer:
-            # Create a new workbook and select the active worksheet
-            workbook = Workbook()
-            sheet = workbook.active
+            try:
+                # Create a new workbook
+                workbook = Workbook()
+                sheet = workbook.active
 
-            # Add headers to the worksheet
-            headers = [
-                "01. Category", "02. District", "03. Date of Registration", "04. Index Number",
-                "05. Name with Initials", "06. Full Name", "07. Date of Birth", "08. Gender",
-                "09. NIC", "10. Telephone Number", "11. NAITA ID Number", "12. Drop Out",
-                "13. Drop Out Date", "14. Address - No.", "15. Address - First Line", "16. Address - Last Line",
-                "17. Name of Establishment", "18. Type of Establishment", "19. Establishment Address Division",
-                "20. Establishment Address District", "21. Establishment Telephone Number", "22. DS Division",
-                "23. Establishment Code", "24. Sector Name", "25. Trade", "26. Trade Code", "27. Mode",
-                "28. NVQ Level", "29. Name of Inspector", "30. Commencement Date", "31. Schedule Date of Completion",
-                "32. Signature of T.M.", "33. Remark"
-            ]
-            sheet.append(headers)
+                # Add headers to the worksheet
+                headers = [
+                    "01. Category", "02. District", "03. Date of Registration", "04. Index Number",
+                    "05. Name with Initials", "06. Full Name", "07. Date of Birth", "08. Gender",
+                    "09. NIC", "10. Telephone Number", "11. NAITA ID Number", "12. Drop Out",
+                    "13. Drop Out Date", "14. Address - No.", "15. Address - First Line", "16. Address - Last Line",
+                    "17. Name of Establishment", "18. Type of Establishment", "19. Establishment Address Division",
+                    "20. Establishment Address District", "21. Establishment Telephone Number", "22. DS Division",
+                    "23. Establishment Code", "24. Sector Name", "25. Trade", "26. Trade Code", "27. Mode",
+                    "28. NVQ Level", "29. Name of Inspector", "30. Commencement Date",
+                    "31. Schedule Date of Completion",
+                    "32. Signature of T.M.", "33. Remark"
+                ]
+                sheet.append(headers)
 
-            # Collect form data
-            data = [
-                "EBT - Enterprise Based Training", district_var.get(), date_of_registration.get_date(),
-                index_number.get(),
-                name.get(), full_name.get(), date_of_birth.get_date(), gender_var.get(),
-                nic.get(), telephone_number.get(), naita_id_number.get(), dropout_var.get(),
-                dropout_date.get_date(), address_no.get(), address_f_line.get(), address_l_line.get(),
-                name_of_establishment_var.get(), establishment_type.get(), establishment_address_division.get(),
-                establishment_address_district.get(), establishment_telephone.get(), ds_division.get(),
-                establishment_code.get(), sector_var.get(), trade_var.get(), trade_code.get(), mode_var.get(),
-                nvq_level_var.get(), inspector_var.get(), commencement_date.get_date(),
-                schedule_date_completion.get_date(),
-                signature_tm.get(), remark.get()
-            ]
-            sheet.append(data)
+                # Collect form data and format dates
+                data = [
+                    [
+                        "EBT - Enterprise Based Training", district_var.get(),
+                        format_date(date_of_registration.get_date()),
+                        index_number.get(), name.get(), full_name.get(), format_date(date_of_birth.get_date()),
+                        gender_var.get(), nic.get(), telephone_number.get(), naita_id_number.get(), dropout_var.get(),
+                        format_date(dropout_date.get_date()), address_no.get(), address_f_line.get(),
+                        address_l_line.get(),
+                        name_of_establishment_var.get(), establishment_type.get(), establishment_address_division.get(),
+                        establishment_address_district.get(), establishment_telephone.get(), ds_division.get(),
+                        establishment_code.get(), sector_var.get(), trade_var.get(), trade_code.get(), mode_var.get(),
+                        nvq_level_var.get(), inspector_var.get(), format_date(commencement_date.get_date()),
+                        format_date(schedule_date_completion.get_date()), signature_tm.get(), remark.get()
+                    ]
+                ]
+                sheet.append(data[0])
 
-            # Save the workbook to a file
-            workbook.save("form_data.xlsx")
+                # Ask user for file name and directory to save
+                file_path = filedialog.asksaveasfilename(
+                    defaultextension=".xlsx",
+                    filetypes=[("Excel files", "*.xlsx"), ("PDF files", "*.pdf"), ("All files", "*.*")],
+                    title="Save file"
+                )
 
-            # Show information box
-            messagebox.showinfo("Printed", "Data has been printed to form_data.xlsx")
+                # Check if user canceled the dialog
+                if file_path:
+                    if file_path.endswith('.xlsx'):
+                        # Save the workbook to the specified file
+                        workbook.save(file_path)
+
+                        # Show information box
+                        messagebox.showinfo("Printed", f"Data has been printed to {file_path}")
+
+                    elif file_path.endswith('.pdf'):
+                        # Save the data to a PDF file
+                        save_to_pdf(file_path, headers, data)
+
+                        # Show information box
+                        messagebox.showinfo("Printed", f"Data has been printed to {file_path}")
+
+            except PermissionError:
+                messagebox.showerror("Error", "Could not save data to file.\n"
+                                              "Please close any open files and try again.")
+
 
     # Helper function to create labels and entries
     def create_label_entry(parent, row, label_text, col_offset=0, label_width=20, font_size=14):
@@ -370,26 +424,15 @@ def form():
     address_l_line = create_label_entry(section1_frame, 20, "       c. Last Line", font_size=14)
     address_l_line.grid(row=20, column=1, padx=5, pady=5, sticky="w")
 
-    # Sector Dropdown
-
-
-
-    # Section 2: Details of the Establishment to Signature of Training Manager
-    section2_frame = ctk.CTkFrame(scrollable_frame, fg_color="#f0f0f0")  # Whitish background for sections
-    section2_frame.pack(pady=10, padx=20, fill="x", expand=True, anchor="center")
-
 
     # Section Header 2
-    header2 = ctk.CTkLabel(section2_frame, text="Establishment Details", font=("Arial", 20, "bold"),
+    header2 = ctk.CTkLabel(section1_frame, text="Establishment Details", font=("Arial", 20, "bold"),
                            fg_color="#f0f0f0", text_color="black")
-    header2.grid(row=0, column=0, columnspan=2, pady=10, padx=100, sticky="w")  # Center header
+    header2.grid(row=22, column=0, columnspan=2, pady=10, padx=100, sticky="w")  # Center header
 
     # Name of Establishment Dropdown
-    name_of_establishment_label = ctk.CTkLabel(section2_frame, text="14. Name of the Establishment", font=("Arial", 14),
-                                               fg_color="#f0f0f0",
-                                               text_color="black", anchor="w")
-    name_of_establishment_label.grid(row=1, column=0, padx=5, pady=2, sticky="w")
-
+    name_of_establishment_label = ctk.CTkLabel(section1_frame, text="14. Name of the Establishment", font=("Arial", 14),fg_color="#f0f0f0",text_color="black", anchor="w")
+    name_of_establishment_label.grid(row=24, column=0, padx=5, pady=5, sticky="w")
     name_of_establishment_values = [
         "_Smallholder Agribusiness Partnerships Program","141 Motors","141, MOTORS PVT LTD","171 Bakers","1st Step Pre School - Matale",
         "1st Way Preschool","3 Arch Resort Lanka(PVT)LTD","3K - Focus Marketing & Engineering","3K- Modern Construction",
@@ -497,11 +540,11 @@ def form():
     ]
 
     name_of_establishment_var = StringVar()
-    name_of_establishment_dropdown = ctk.CTkComboBox(section2_frame, variable=name_of_establishment_var,
+    name_of_establishment_dropdown = ctk.CTkComboBox(section1_frame, variable=name_of_establishment_var,
                                                      fg_color="#A1AEB1", values=name_of_establishment_values, width=300,
                                                      font=("Arial", 14), button_color="gray", button_hover_color="#888",
                                                      text_color="black")
-    name_of_establishment_dropdown.grid(row=1, column=2, padx=5, pady=5, sticky="w")
+    name_of_establishment_dropdown.grid(row=24, column=1, padx=5, pady=5, sticky="w")
 
     def update_name_of_establishment_combobox(event):
         value = event.widget.get()
@@ -515,32 +558,32 @@ def form():
 
     name_of_establishment_dropdown._entry.bind('<KeyRelease>', update_name_of_establishment_combobox)
 
-    establishment_type = create_label_entry(section2_frame, 2, "15. Type of the Establishment", font_size=14)
-    establishment_type.grid(row=2, column=2, padx=5, pady=5, sticky="w")
+    establishment_type = create_label_entry(section1_frame, 25, "15. Type of the Establishment", font_size=14)
+    establishment_type.grid(row=25, column=1, padx=5, pady=5, sticky="w")
 
-    establishment_address_division = create_label_entry(section2_frame, 3, "16. Establishment Address Division",
+    establishment_address_division = create_label_entry(section1_frame, 26, "16. Establishment Address Division",
                                                         font_size=14)
-    establishment_address_division.grid(row=3, column=2, padx=5, pady=5, sticky="w")
 
-    establishment_address_district = create_label_entry(section2_frame, 4, "17. Establishment Address District",
+    establishment_address_division.grid(row=26, column=1, padx=5, pady=5, sticky="w")
+
+    establishment_address_district = create_label_entry(section1_frame, 27, "17. Establishment Address District",
                                                         font_size=14)
-    establishment_address_district.grid(row=4, column=2, padx=5, pady=5, sticky="w")
+    establishment_address_district.grid(row=27, column=1, padx=5, pady=5, sticky="w")
 
-    establishment_telephone = create_label_entry(section2_frame, 5, "18. Establishment Telephone", font_size=14)
-    establishment_telephone.grid(row=5, column=2, padx=5, pady=5, sticky="w")
+    establishment_telephone = create_label_entry(section1_frame, 28, "18. Establishment Telephone", font_size=14)
+    establishment_telephone.grid(row=28, column=1, padx=5, pady=5, sticky="w")
 
-    ds_division = create_label_entry(section2_frame, 6, "19. DS Division", font_size=14)
-    ds_division.grid(row=6, column=2, padx=5, pady=5, sticky="w")
+    ds_division = create_label_entry(section1_frame, 29, "19. DS Division", font_size=14)
+    ds_division.grid(row=29, column=1, padx=5, pady=5, sticky="w")
 
-    establishment_code = create_label_entry(section2_frame, 7, "20. Establishment Code", font_size=14)
-    establishment_code.grid(row=7, column=2, padx=5, pady=5, sticky="w")
+    establishment_code = create_label_entry(section1_frame, 30, "20. Establishment Code", font_size=14)
+    establishment_code.grid(row=30, column=1, padx=5, pady=5, sticky="w")
 
-    section3_frame = ctk.CTkFrame(scrollable_frame, fg_color="#f0f0f0")
-    section3_frame.pack(pady=10, padx=20, fill="x", expand=True, anchor="center")
 
-    header3 = ctk.CTkLabel(section3_frame, text="Course Details", font=("Arial", 20, "bold"),
+
+    header3 = ctk.CTkLabel(section1_frame, text="Course Details", font=("Arial", 20, "bold"),
                            fg_color="#f0f0f0", text_color="black")
-    header3.grid(row=0, column=0, columnspan=2, pady=10,padx=100, sticky="w")
+    header3.grid(row=32, column=0, columnspan=2, pady=10,padx=100, sticky="w")
 
     def update_combobox(event):
         value = event.widget.get()
@@ -555,9 +598,9 @@ def form():
         # Open the dropdown to show filtered results
         sector_dropdown.event_generate('<Down>')
 
-    sector_label = ctk.CTkLabel(section3_frame, text="21. Sector", font=("Arial", 14), fg_color="#f0f0f0",
+    sector_label = ctk.CTkLabel(section1_frame, text="21. Sector", font=("Arial", 14), fg_color="#f0f0f0",
                                 text_color="black", anchor="w")
-    sector_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+    sector_label.grid(row=34, column=0, padx=5, pady=5, sticky="w")
 
     sector_values = [
         "Agriculture plantation and live stock", "Art design and media (visual and performing",
@@ -573,23 +616,19 @@ def form():
         "Textile and garments", "Wood related"]
 
     sector_var = StringVar()
-    sector_dropdown = ctk.CTkComboBox(section3_frame, variable=sector_var, fg_color="#A1AEB1", values=sector_values,
+    sector_dropdown = ctk.CTkComboBox(section1_frame, variable=sector_var, fg_color="#A1AEB1", values=sector_values,
                                       width=300,
                                       font=("Arial", 14), button_color="gray", button_hover_color="#888",
                                       text_color="black")
-    sector_dropdown.grid(row=1, column=2, padx=5, pady=5, sticky="w")
+    sector_dropdown.grid(row=34, column=1, padx=5, pady=5, sticky="w")
 
     sector_dropdown._entry.bind('<KeyRelease>', update_combobox)
 
-    trade_label = ctk.CTkLabel(section3_frame, text="22. Trade", font=("Arial", 14), fg_color="#f0f0f0",
-                               text_color="black", anchor="w")
-    trade_label.grid(row=9, column=0, padx=5, pady=5, sticky="w")
-
     trade_var = StringVar()
     # Trade Dropdown
-    trade_label = ctk.CTkLabel(section3_frame, text="22. Trade", font=("Arial", 14), fg_color="#f0f0f0",
+    trade_label = ctk.CTkLabel(section1_frame, text="22. Trade", font=("Arial", 14), fg_color="#f0f0f0",
                                text_color="black", anchor="w")
-    trade_label.grid(row=9, column=0, padx=5, pady=5, sticky="w")
+    trade_label.grid(row=35, column=0, padx=5, pady=5, sticky="w")
 
     trade_values = [
         "3K - Aluminium fabricator", "3K - Aquarium keeper", "3K - Bathik artist", "3K - Beautician",
@@ -707,11 +746,11 @@ def form():
     ]
 
     trade_var = StringVar()
-    trade_dropdown = ctk.CTkComboBox(section3_frame, variable=trade_var, fg_color="#A1AEB1", values=trade_values,
+    trade_dropdown = ctk.CTkComboBox(section1_frame, variable=trade_var, fg_color="#A1AEB1", values=trade_values,
                                      width=300,
                                      font=("Arial", 14), button_color="gray", button_hover_color="#888",
                                      text_color="black")
-    trade_dropdown.grid(row=9, column=2, padx=5, pady=5, sticky="w")
+    trade_dropdown.grid(row=35, column=1, padx=5, pady=5, sticky="w")
 
     def update_trade_combobox(event):
         value = event.widget.get()
@@ -725,22 +764,22 @@ def form():
 
     trade_dropdown._entry.bind('<KeyRelease>', update_trade_combobox)
 
-    trade_code = create_label_entry(section3_frame, 10, "23. Trade Code", font_size=14)
-    trade_code.grid(row=10, column=2, padx=5, pady=5, sticky="w")
+    trade_code = create_label_entry(section1_frame, 36, "23. Trade Code", font_size=14)
+    trade_code.grid(row=36, column=1, padx=5, pady=5, sticky="w")
 
     # Mode Dropdown
-    mode_label = ctk.CTkLabel(section3_frame, text="24. Mode", font=("Arial", 14), fg_color="#f0f0f0",
+    mode_label = ctk.CTkLabel(section1_frame, text="24. Mode", font=("Arial", 14), fg_color="#f0f0f0",
                               text_color="black", anchor="w")
-    mode_label.grid(row=11, column=0, padx=5, pady=5, sticky="w")
+    mode_label.grid(row=37, column=0, padx=5, pady=5, sticky="w")
 
     mode_values = ["ASS", "CRFT", "HVV", "NVQ", "PTC"]
 
     mode_var = StringVar()
-    mode_dropdown = ctk.CTkComboBox(section3_frame, variable=mode_var, fg_color="#A1AEB1", values=mode_values,
+    mode_dropdown = ctk.CTkComboBox(section1_frame, variable=mode_var, fg_color="#A1AEB1", values=mode_values,
                                     width=300,
                                     font=("Arial", 14), button_color="gray", button_hover_color="#888",
                                     text_color="black")
-    mode_dropdown.grid(row=11, column=2, padx=5, pady=5, sticky="w")
+    mode_dropdown.grid(row=37, column=1, padx=5, pady=5, sticky="w")
 
     def update_mode_combobox(event):
         value = event.widget.get()
@@ -755,18 +794,18 @@ def form():
     mode_dropdown._entry.bind('<KeyRelease>', update_mode_combobox)
 
     # NVQ Level Dropdown
-    nvq_level_label = ctk.CTkLabel(section3_frame, text="25. NVQ Level", font=("Arial", 14), fg_color="#f0f0f0",
+    nvq_level_label = ctk.CTkLabel(section1_frame, text="25. NVQ Level", font=("Arial", 14), fg_color="#f0f0f0",
                                    text_color="black", anchor="w")
-    nvq_level_label.grid(row=12, column=0, padx=5, pady=5, sticky="w")
+    nvq_level_label.grid(row=38, column=0, padx=5, pady=5, sticky="w")
 
     nvq_level_values = ["3", "4", "6", "Certificate"]
 
     nvq_level_var = StringVar()
-    nvq_level_dropdown = ctk.CTkComboBox(section3_frame, variable=nvq_level_var, fg_color="#A1AEB1",
+    nvq_level_dropdown = ctk.CTkComboBox(section1_frame, variable=nvq_level_var, fg_color="#A1AEB1",
                                          values=nvq_level_values, width=300,
                                          font=("Arial", 14), button_color="gray", button_hover_color="#888",
                                          text_color="black")
-    nvq_level_dropdown.grid(row=12, column=2, padx=5, pady=5, sticky="w")
+    nvq_level_dropdown.grid(row=38, column=1, padx=5, pady=5, sticky="w")
 
     def update_nvq_level_combobox(event):
         value = event.widget.get()
@@ -781,10 +820,10 @@ def form():
     nvq_level_dropdown._entry.bind('<KeyRelease>', update_nvq_level_combobox)
 
     # Inspector Dropdown
-    inspector_label = ctk.CTkLabel(section3_frame, text="26. Name of the Inspector", font=("Arial", 14),
+    inspector_label = ctk.CTkLabel(section1_frame, text="26. Name of the Inspector", font=("Arial", 14),
                                    fg_color="#f0f0f0",
                                    text_color="black", anchor="w")
-    inspector_label.grid(row=13, column=0, padx=5, pady=5, sticky="w")
+    inspector_label.grid(row=39, column=0, padx=5, pady=5, sticky="w")
 
     inspector_values = [
         "A Sivanenthiran","A. Niyas","A.A. Nimali","A.A.I.P Wickramasinghe","A.A.M. Hemachandra","A.A.M. Sifnas",
@@ -831,11 +870,11 @@ def form():
     ]
 
     inspector_var = StringVar()
-    inspector_dropdown = ctk.CTkComboBox(section3_frame, variable=inspector_var, fg_color="#A1AEB1",
+    inspector_dropdown = ctk.CTkComboBox(section1_frame, variable=inspector_var, fg_color="#A1AEB1",
                                          values=inspector_values, width=300,
                                          font=("Arial", 14), button_color="gray", button_hover_color="#888",
                                          text_color="black")
-    inspector_dropdown.grid(row=13, column=2, padx=5, pady=5, sticky="w")
+    inspector_dropdown.grid(row=39, column=1, padx=5, pady=5, sticky="w")
 
     def update_inspector_combobox(event):
         value = event.widget.get()
@@ -849,26 +888,26 @@ def form():
 
     inspector_dropdown._entry.bind('<KeyRelease>', update_inspector_combobox)
 
-    commencement_date_label = ctk.CTkLabel(section3_frame, text="27. Commencement Date", font=("Arial", 14),
+    commencement_date_label = ctk.CTkLabel(section1_frame, text="27. Commencement Date", font=("Arial", 14),
                                        fg_color="#f0f0f0",
                                        text_color="black", anchor="w")
-    commencement_date_label.grid(row=14, column=0, padx=5, pady=5, sticky="w")
-    commencement_date = DateEntry(section3_frame, width=31, background='gray', foreground="white", borderwidth=2,
+    commencement_date_label.grid(row=40, column=0, padx=5, pady=5, sticky="w")
+    commencement_date = DateEntry(section1_frame, width=31, background='gray', foreground="white", borderwidth=2,
                                   font=("Arial", 14))
-    commencement_date.grid(row=14, column=2, padx=5, pady=5, sticky="w")
+    commencement_date.grid(row=40, column=1, padx=5, pady=5, sticky="w")
 
-    schedule_date_completion_label = ctk.CTkLabel(section3_frame, text="28. Schedule Date Completion", font=("Arial", 14),
+    schedule_date_completion_label = ctk.CTkLabel(section1_frame, text="28. Schedule Date Completion", font=("Arial", 14),
                                            fg_color="#f0f0f0",
                                            text_color="black", anchor="w")
-    schedule_date_completion_label.grid(row=15, column=0, padx=5, pady=5, sticky="w")
-    schedule_date_completion = DateEntry(section3_frame, width=31, background='gray', foreground='white',
+    schedule_date_completion_label.grid(row=41, column=0, padx=5, pady=5, sticky="w")
+    schedule_date_completion = DateEntry(section1_frame, width=31, background='gray', foreground='white',
                                          borderwidth=2, font=("Arial", 14))
-    schedule_date_completion.grid(row=15, column=2, padx=5, pady=5, sticky="w")
+    schedule_date_completion.grid(row=41, column=1, padx=5, pady=5, sticky="w")
 
-    signature_tm = create_label_entry(section3_frame, 16, "29. Signature of the Training Manager", font_size=14)
-    signature_tm.grid(row=16, column=2, padx=5, pady=5, sticky="w")
-    remark = create_label_entry(section3_frame, 17, "30. Remark", font_size=14)
-    remark.grid(row=17, column=2, padx=5, pady=5, sticky="w")
+    signature_tm = create_label_entry(section1_frame, 42, "29. Signature of the Training Manager", font_size=14)
+    signature_tm.grid(row=42, column=1, padx=5, pady=5, sticky="w")
+    remark = create_label_entry(section1_frame, 43, "30. Remark", font_size=14)
+    remark.grid(row=43, column=1, padx=5, pady=5, sticky="w")
 
     # Submit and Clear buttons
     button_frame = ctk.CTkFrame(scrollable_frame, fg_color="#f0f0f0")
@@ -890,6 +929,7 @@ def form():
     print_button = ctk.CTkButton(button_frame, text="Print", font=("Arial", 14, "bold"), fg_color="crimson",
                                  text_color="white", command=print_to_excel)
     print_button.pack(pady=10, padx=20, side=LEFT)
+
 
     app.mainloop()
 
