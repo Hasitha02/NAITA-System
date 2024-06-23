@@ -5,6 +5,8 @@ import mysql.connector
 from mysql.connector import Error
 import re
 
+from openpyxl import Workbook
+
 
 
 def connect_to_db():
@@ -13,7 +15,7 @@ def connect_to_db():
             host='localhost',  # Replace with your MySQL host
             database='NAITA',  # Replace with your MySQL database
             user='root',       # Replace with your MySQL username
-            password='prabhashi915' # Replace with your MySQL password
+            password='hasitha0214' # Replace with your MySQL password
         )
         if connection.is_connected():
             return connection
@@ -100,46 +102,101 @@ def form():
         elif not (nic_pattern_12_digits.match(nic.get()) or nic_pattern_9_digits_1_letter.match(nic.get())):
             messagebox.showerror("Error", "NIC should be exactly 12 digits or 9 digits followed by one letter.")
         else:
-            dropout_date_value = dropout_date.get() if dropout_var.get() == "Yes" else None
+            # Confirmation dialog
+            confirmed = messagebox.askyesno("Submit Form", "Are you sure you want to submit this form?")
+            if confirmed:
+                dropout_date_value = dropout_date.get() if dropout_var.get() == "Yes" else None
 
-            if insert_into_db(
-                    "EBT - Enterprise Based Training", district_var.get(), date_of_registration.get(),
-                    index_number.get(),
-                    name.get(), full_name.get(), date_of_birth.get(), gender_var.get(), nic.get(),
-                    telephone_number.get(),
-                    naita_id_number.get(), dropout_var.get(),dropout_date_value, address_no.get(),
-                    address_f_line.get(),
-                    address_l_line.get(), name_of_establishment_var.get(), establishment_type.get(),
-                    establishment_address_division.get(), establishment_address_district.get(),
-                    establishment_telephone.get(),
-                    ds_division.get(), establishment_code.get(), sector_var.get(), trade_var.get(), trade_code.get(),
-                    mode_var.get(), nvq_level_var.get(), inspector_var.get(), commencement_date.get(),
-                    schedule_date_completion.get(), signature_tm.get(), remark.get()
-            ):
-                messagebox.showinfo("Success", "Form submitted successfully.")
-
+                if insert_into_db(
+                        "EBT - Enterprise Based Training", district_var.get(), date_of_registration.get(),
+                        index_number.get(),
+                        name.get(), full_name.get(), date_of_birth.get(), gender_var.get(), nic.get(),
+                        telephone_number.get(),
+                        naita_id_number.get(), dropout_var.get(), dropout_date_value, address_no.get(),
+                        address_f_line.get(),
+                        address_l_line.get(), name_of_establishment_var.get(), establishment_type.get(),
+                        establishment_address_division.get(), establishment_address_district.get(),
+                        establishment_telephone.get(),
+                        ds_division.get(), establishment_code.get(), sector_var.get(), trade_var.get(),
+                        trade_code.get(),
+                        mode_var.get(), nvq_level_var.get(), inspector_var.get(), commencement_date.get(),
+                        schedule_date_completion.get(), signature_tm.get(), remark.get()
+                ):
+                    messagebox.showinfo("Success", "Form submitted successfully.")
+            else:
+                messagebox.showinfo("Submission Cancelled", "Form submission cancelled.")
     def back():
         print("a")
+
     def clear_form():
-        # Function to clear all input fields
-        for widget in scrollable_frame.winfo_children():
-            if isinstance(widget, ctk.CTkEntry) or isinstance(widget, DateEntry):
-                widget.delete(0, 'end')
-            elif isinstance(widget, ctk.CTkOptionMenu):
-                widget.set("")
-            elif isinstance(widget, Frame):
-                for inner_widget in widget.winfo_children():
-                    if isinstance(inner_widget, ctk.CTkEntry) or isinstance(inner_widget, DateEntry):
-                        inner_widget.delete(0, 'end')
-                    elif isinstance(inner_widget, ctk.CTkOptionMenu):
-                        inner_widget.set("")
-                    elif isinstance(inner_widget, Frame):
-                        for radio in inner_widget.winfo_children():
-                            if isinstance(radio, ctk.CTkRadioButton):
-                                radio.deselect()
+        # Ask for confirmation
+        answer = messagebox.askyesno("Confirmation", "Are you sure you want to clear all fields?")
+
+        if answer:
+            # Function to clear all input fields
+            for widget in scrollable_frame.winfo_children():
+                if isinstance(widget, ctk.CTkEntry) or isinstance(widget, DateEntry):
+                    widget.delete(0, 'end')
+                elif isinstance(widget, ctk.CTkOptionMenu):
+                    widget.set("")
+                elif isinstance(widget, Frame):
+                    for inner_widget in widget.winfo_children():
+                        if isinstance(inner_widget, ctk.CTkEntry) or isinstance(inner_widget, DateEntry):
+                            inner_widget.delete(0, 'end')
+                        elif isinstance(inner_widget, ctk.CTkOptionMenu):
+                            inner_widget.set("")
+                        elif isinstance(inner_widget, Frame):
+                            for radio in inner_widget.winfo_children():
+                                if isinstance(radio, ctk.CTkRadioButton):
+                                    radio.deselect()
 
     scrollable_frame.bind("<Configure>", on_frame_configure)
     canvas.bind_all("<MouseWheel>", on_mouse_wheel)
+
+    def print_to_excel():
+        # Ask for confirmation
+        answer = messagebox.askyesno("Confirmation", "Are you sure you want to print data to Excel?")
+
+        if answer:
+            # Create a new workbook and select the active worksheet
+            workbook = Workbook()
+            sheet = workbook.active
+
+            # Add headers to the worksheet
+            headers = [
+                "01. Category", "02. District", "03. Date of Registration", "04. Index Number",
+                "05. Name with Initials", "06. Full Name", "07. Date of Birth", "08. Gender",
+                "09. NIC", "10. Telephone Number", "11. NAITA ID Number", "12. Drop Out",
+                "13. Drop Out Date", "14. Address - No.", "15. Address - First Line", "16. Address - Last Line",
+                "17. Name of Establishment", "18. Type of Establishment", "19. Establishment Address Division",
+                "20. Establishment Address District", "21. Establishment Telephone Number", "22. DS Division",
+                "23. Establishment Code", "24. Sector Name", "25. Trade", "26. Trade Code", "27. Mode",
+                "28. NVQ Level", "29. Name of Inspector", "30. Commencement Date", "31. Schedule Date of Completion",
+                "32. Signature of T.M.", "33. Remark"
+            ]
+            sheet.append(headers)
+
+            # Collect form data
+            data = [
+                "EBT - Enterprise Based Training", district_var.get(), date_of_registration.get_date(),
+                index_number.get(),
+                name.get(), full_name.get(), date_of_birth.get_date(), gender_var.get(),
+                nic.get(), telephone_number.get(), naita_id_number.get(), dropout_var.get(),
+                dropout_date.get_date(), address_no.get(), address_f_line.get(), address_l_line.get(),
+                name_of_establishment_var.get(), establishment_type.get(), establishment_address_division.get(),
+                establishment_address_district.get(), establishment_telephone.get(), ds_division.get(),
+                establishment_code.get(), sector_var.get(), trade_var.get(), trade_code.get(), mode_var.get(),
+                nvq_level_var.get(), inspector_var.get(), commencement_date.get_date(),
+                schedule_date_completion.get_date(),
+                signature_tm.get(), remark.get()
+            ]
+            sheet.append(data)
+
+            # Save the workbook to a file
+            workbook.save("form_data.xlsx")
+
+            # Show information box
+            messagebox.showinfo("Printed", "Data has been printed to form_data.xlsx")
 
     # Helper function to create labels and entries
     def create_label_entry(parent, row, label_text, col_offset=0, label_width=20, font_size=14):
@@ -829,6 +886,10 @@ def form():
                                  fg_color="crimson", text_color="white")
     submit_button.pack(side=LEFT, padx=20, pady=10)
 
+    # Print Button
+    print_button = ctk.CTkButton(button_frame, text="Print", font=("Arial", 14, "bold"), fg_color="crimson",
+                                 text_color="white", command=print_to_excel)
+    print_button.pack(pady=10, padx=20, side=LEFT)
 
     app.mainloop()
 
