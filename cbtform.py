@@ -15,7 +15,7 @@ def connect_to_db():
             host='localhost',  # Replace with your MySQL host
             database='NAITA',  # Replace with your MySQL database
             user='root',       # Replace with your MySQL username
-            password='prabhashi915' # Replace with your MySQL password
+            password='hasitha0214' # Replace with your MySQL password
         )
         if connection.is_connected():
             return connection
@@ -143,7 +143,7 @@ def form():
                     for inner_widget in widget.winfo_children():
                         if isinstance(inner_widget, ctk.CTkEntry) or isinstance(inner_widget, DateEntry):
                             inner_widget.delete(0, 'end')
-                        elif isinstance(inner_widget, ctk.CTkOptionMenu):
+                        elif isinstance(inner_widget, ctk.CTkComboBox):
                             inner_widget.set("")
                         elif isinstance(inner_widget, Frame):
                             for radio in inner_widget.winfo_children():

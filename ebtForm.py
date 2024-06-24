@@ -143,7 +143,7 @@ def form():
                     for inner_widget in widget.winfo_children():
                         if isinstance(inner_widget, ctk.CTkEntry) or isinstance(inner_widget, DateEntry):
                             inner_widget.delete(0, 'end')
-                        elif isinstance(inner_widget, ctk.CTkOptionMenu):
+                        elif isinstance(inner_widget, ctk.CTkComboBox):
                             inner_widget.set("")
                         elif isinstance(inner_widget, Frame):
                             for radio in inner_widget.winfo_children():
