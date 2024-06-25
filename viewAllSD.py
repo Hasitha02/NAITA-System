@@ -207,7 +207,7 @@ label_image.place(relx=0, rely=0)
 header_frame = ctk.CTkFrame(main_frame, fg_color="white")
 header_frame.pack(pady=150, padx=40, fill="x", expand=False)  # Increase pady to lower the header
 
-header_label = ctk.CTkLabel(header_frame, text="All Student Details - CBT", font=("Arial", 29, "bold"),
+header_label = ctk.CTkLabel(header_frame, text="All Student Details", font=("Arial", 29, "bold"),
                             fg_color="white", text_color="black")
 header_label.pack(pady=(30, 10), padx=150, anchor="center")  # Reduced the gap below the label
 
