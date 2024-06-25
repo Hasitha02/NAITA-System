@@ -6,7 +6,7 @@ from PIL import Image
 import re
 import mysql.connector
 from mysql.connector import Error
-from cbtForm import cbt_form_function
+from cbtform import cbt_form_function
 from ebtForm import ebt_form_function
 
 # Function to connect to the MySQL database
