@@ -6,8 +6,15 @@ from PIL import Image
 import re
 import mysql.connector
 from mysql.connector import Error
-from cbtform import cbt_form_function
+from cbtForm import cbt_form_function
 from ebtForm import ebt_form_function
+from edit_CBT import edit_CBT_function
+from edit_EBT import edit_EBT_function
+from View_All_Student_Deatails_EBT import view_all_EBT
+from View_All_Student_Details_CBT import view_all_CBT
+from View_All_Student_Details import view_all_details
+from Search_Student_Deatails_CBT import search_CBT
+from Search_Student_Details_EBT import search_EBT
 
 # Function to connect to the MySQL database
 def connect_to_db():
@@ -114,7 +121,6 @@ def login_window_function():
             # Insert data into the database
             if insert_into_db(first_name, last_name, username, email, password):
                 messagebox.showinfo("Success", "Account created successfully!")
-                app.destroy()
 
         frame4 = customtkinter.CTkFrame(master=creating_new_page, width=300, height=400, corner_radius=10)
         frame4.place(relx=0.5, rely=0, relwidth=0.5, relheight=1)
@@ -176,13 +182,6 @@ def login_window_function():
         button_help = customtkinter.CTkButton(master=frame3, text="Help", command=show_help, width=100, height=30, fg_color="#87212E", hover_color='#46070F')
         button_help.place(x=420, y=530)
 
-        def back_btn_function():
-            creating_new_page.destroy()
-
-        # Create and place the back button
-        back_button = customtkinter.CTkButton(master=frame3, text='Back', width=100, height=30, fg_color='#87212E', hover_color='#46070F', command=back_btn_function)
-        back_button.place(x=20, y=530)
-
         creating_new_page.mainloop()
 
     # -----------------------------------------------------------------------------------
@@ -200,7 +199,6 @@ def login_window_function():
         frame1 = customtkinter.CTkFrame(master=forgot_password_window, width=300, height=400, fg_color='#ddd')
         frame1.place(relx=0, rely=0, relwidth=0.5, relheight=1)
 
-        # Function to toggle password visibility
         def toggle_password():
             if show_password_var.get():
                 new_password_entry.configure(show="")
@@ -230,9 +228,30 @@ def login_window_function():
                 messagebox.showerror("Error", "Password doesn't match!")
                 return
 
-            messagebox.showinfo("Success!", "Password has been changed!")
-            if all([email, new_password, confirm_password]):
-                customtkinter.CTk.destroy(frame1)
+            try:
+                connection = mysql.connector.connect(
+                    host='localhost',  # Update with your host
+                    database='NAITA',  # Update with your database name
+                    user='root',  # Update with your MySQL username
+                    password='11156363312'  # Update with your MySQL password
+                )
+
+                if connection.is_connected():
+                    cursor = connection.cursor()
+                    sql_update_query = """UPDATE CreateAccount SET password = %s WHERE email = %s"""
+                    cursor.execute(sql_update_query, (new_password, email))
+                    connection.commit()
+
+                    if cursor.rowcount == 0:
+                        messagebox.showerror("Error", "No account found with the provided email!")
+                    else:
+                        messagebox.showinfo("Success!", "Password has been changed!")
+
+                    cursor.close()
+                    connection.close()
+
+            except Error as e:
+                messagebox.showerror("Error", f"Error while connecting to MySQL: {e}")
 
         logo_image = Image.open("naita_icon2.jpg")
         logo_photo = customtkinter.CTkImage(light_image=logo_image, dark_image=logo_image, size=(100, 100))
@@ -271,10 +290,10 @@ def login_window_function():
         # Create and place the Show Password checkbox
         show_password_var = tk.BooleanVar()
         checkbox_show_password = customtkinter.CTkCheckBox(master=frame1, text="Show Password", text_color="black", variable=show_password_var, command=toggle_password, hover_color='#46070F')
-        checkbox_show_password.place(x=170, y=410)
+        checkbox_show_password.place(x=170, y=420)
 
         reset_btn = customtkinter.CTkButton(master=frame1, width=120, text="Reset password", corner_radius=6,fg_color="#87212E", command=reset_password, hover_color='#46070F')
-        reset_btn.place(x=170, y=450)
+        reset_btn.place(x=170, y=480)
 
         forgot_password_window.mainloop()
     # -----------------------------------------------------------------------------------
@@ -346,13 +365,18 @@ def login_window_function():
 
                     view_btn = customtkinter.CTkButton(master=frame_5, text='View', height=40, text_color='#87212E',
                                                        fg_color='white', font=('Century Gothic', 20), corner_radius=0,
-                                                       hover_color='#46070F')
+                                                       hover_color='#46070F', command=view_all_CBT)
                     view_btn.place(x=350, y=400)
 
                     edit_btn = customtkinter.CTkButton(master=frame_5, text='Edit', height=40, text_color='#87212E',
                                                        fg_color='white', font=('Century Gothic', 20), corner_radius=0,
-                                                       hover_color='#46070F')
+                                                       hover_color='#46070F', command=edit_CBT_function)
                     edit_btn.place(x=550, y=400)
+
+                    search_btn = customtkinter.CTkButton(master=frame_5, text='Search', height=40, text_color='#87212E',
+                                                       fg_color='white', font=('Century Gothic', 20), corner_radius=0,
+                                                       hover_color='#46070F', command=search_CBT)
+                    search_btn.place(x=310, y=480)
 
                     selection.mainloop()
 
@@ -380,13 +404,18 @@ def login_window_function():
 
                     view_btn = customtkinter.CTkButton(master=frame_5, text='View', height=40, text_color='#87212E',
                                                        fg_color='white', font=('Century Gothic', 20), corner_radius=0,
-                                                       hover_color='#46070F')
+                                                       hover_color='#46070F', command=view_all_EBT)
                     view_btn.place(x=350, y=400)
 
                     edit_btn = customtkinter.CTkButton(master=frame_5, text='Edit', height=40, text_color='#87212E',
                                                        fg_color='white', font=('Century Gothic', 20), corner_radius=0,
-                                                       hover_color='#46070F')
+                                                       hover_color='#46070F', command=edit_EBT_function)
                     edit_btn.place(x=550, y=400)
+
+                    search_btn = customtkinter.CTkButton(master=frame_5, text='Search', height=40, text_color='#87212E',
+                                                         fg_color='white', font=('Century Gothic', 20), corner_radius=0,
+                                                         hover_color='#46070F', command=search_EBT)
+                    search_btn.place(x=310, y=480)
 
                     selection.mainloop()
 
@@ -398,7 +427,13 @@ def login_window_function():
                 btn_ebt = customtkinter.CTkButton(master=frame_4, text='EBT', font=('Century Gothic', 20), height=40,
                                                   text_color='#87212E', fg_color='white', hover_color='#46070F',
                                                   corner_radius=0, command=selection_ebt_window)
-                btn_ebt.place(x=400, y=400)
+                btn_ebt.place(x=380, y=400)
+
+                btn_view_all = customtkinter.CTkButton(master=frame_4, text='View all details', height=40,
+                                                       text_color='#87212E', fg_color='white', hover_color='#46070F',
+                                                       font=('Century Gothic', 20), corner_radius=0,
+                                                       command=view_all_details, width=200)
+                btn_view_all.place(x=320, y=500)
 
                 categories.mainloop()
 
@@ -449,13 +484,13 @@ def login_window_function():
     checkbox_show_password.place(x=170, y=380)
 
     reset_password_btn = customtkinter.CTkButton(master=frame_left_lg, text="Forgot password?", font=('Century Gothic', 12), fg_color='#87212E', command=forgot_password, hover_color='#46070F')
-    reset_password_btn.place(x=170, y=420)
+    reset_password_btn.place(x=250, y=420)
 
     login_btn = customtkinter.CTkButton(master=frame_left_lg, width=120, text="Login", corner_radius=6, fg_color="#87212E", command=login, hover_color='#46070F')
-    login_btn.place(x=170, y=470)
+    login_btn.place(x=270, y=470)
 
     create_account_btn = customtkinter.CTkButton(master=frame_left_lg, text="Don't have an account?", corner_radius=6,fg_color='#87212E', font=('Century Gothic', 12), command=create_new_account_page, hover_color='#46070F')
-    create_account_btn.place(x=350, y=520)
+    create_account_btn.place(x=230, y=520)
 
     login_window.mainloop()
 
@@ -513,7 +548,6 @@ def create_new_account_page():
         # Insert data into the database
         if insert_into_db(first_name, last_name, username, email, password):
             messagebox.showinfo("Success", "Account created successfully!")
-            app.destroy()
 
     frame4 = customtkinter.CTkFrame(master=creating_new_page, width=300, height=400, corner_radius=10)
     frame4.place(relx=0.5, rely=0, relwidth=0.5, relheight=1)
@@ -575,13 +609,6 @@ def create_new_account_page():
     button_help = customtkinter.CTkButton(master=frame3, text="Help", command=show_help, width=100, height=30, fg_color="#87212E", hover_color='#46070F')
     button_help.place(x=420, y=530)
 
-    def back_btn_function():
-        creating_new_page.destroy()
-
-    # Create and place the back button
-    back_button = customtkinter.CTkButton(master=frame3, text='Back', width=100, height=30, fg_color='#87212E', hover_color='#46070F', command=back_btn_function)
-    back_button.place(x=20, y=530)
-
     creating_new_page.mainloop()
 
 customtkinter.set_appearance_mode("dark")  # can set light or dark
@@ -604,6 +631,12 @@ login_btn.place(x=350, y=370)
 
 sign_up_btn = customtkinter.CTkButton(master=frame_main, width=200, height=50, font=('Century Gothic', 20), text='Sign up', text_color='white', fg_color='#87212E', corner_radius=0, command=create_new_account_page, hover_color='#46070F')
 sign_up_btn.place(x=300, y=470)
+
+def exit():
+    app.destroy()
+
+exit_btn = customtkinter.CTkButton(master=frame_main, width=130, height=40, font=('Century Gothic', 20), text="EXIT", text_color='#87212E', fg_color='white', hover_color='#46070F', corner_radius=0, command=exit)
+exit_btn.place(x=20, y=540)
 
 app.mainloop()
 
