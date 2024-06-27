@@ -1,4 +1,4 @@
-def ebt_form_function():
+def cbt_form_function():
     import customtkinter as ctk
     from tkinter import StringVar, Frame, Scrollbar, Canvas, VERTICAL, RIGHT, LEFT, Y, BOTH, messagebox, filedialog
     from tkcalendar import DateEntry
@@ -31,7 +31,7 @@ def ebt_form_function():
             try:
                 cursor = connection.cursor()
                 cursor.execute("USE NAITA;")
-                query = """INSERT INTO EBTSD (category, district, dateOfRegistration, indexNumber, name, fullName, dateofBirth, gender, NIC,
+                query = """INSERT INTO CBTSD (category, district, dateOfRegistration, indexNumber, name, fullName, dateofBirth, gender, NIC,
                            telephoneNumber, NAITAIDnumber, dropOut, dropOutDate, addressNo, addressFLine, addressLLine, nameofEstablishment, establishmentType,
                            establishmentAddressDivision, establishmentAddressDistrict, establishmentTelephone, DSDivision, establishmentCode,
                            sectorName, trade, tradeCode, mode, NVQLevel, inspectorName, commencementDate, scheduleDateCompletion, signatureTM, remark)
@@ -49,7 +49,7 @@ def ebt_form_function():
     def form():
         # Create the main application window
         app = ctk.CTk()
-        app.title("EBT Form")
+        app.title("CBT Form")
         app.geometry("1080x706")
 
         # Create a frame for the form
@@ -107,7 +107,7 @@ def ebt_form_function():
                     dropout_date_value = dropout_date.get() if dropout_var.get() == "Yes" else None
 
                     if insert_into_db(
-                            "EBT - Enterprise Based Training", district_var.get(), date_of_registration.get(),
+                            "CBT - Center Based Training", district_var.get(), date_of_registration.get(),
                             index_number.get(),
                             name.get(), full_name.get(), date_of_birth.get(), gender_var.get(), nic.get(),
                             telephone_number.get(),
@@ -266,7 +266,7 @@ def ebt_form_function():
         section1_frame = ctk.CTkFrame(scrollable_frame, fg_color="#f0f0f0")  # Whitish background for sections
         section1_frame.pack(pady=10, padx=20, fill="x", expand=True, anchor="center")
 
-        header1 = ctk.CTkLabel(section1_frame, text="Student Registration Form - EBT    ", font=("Arial", 29, "bold"),
+        header1 = ctk.CTkLabel(section1_frame, text="Student Registration Form - CBT    ", font=("Arial", 29, "bold"),
                                fg_color="#f0f0f0", text_color="black")
         header1.grid(row=0, column=0, columnspan=2, pady=10, padx=150, sticky="w")  # Center header
 
@@ -279,7 +279,7 @@ def ebt_form_function():
                                       text_color="black", anchor="w")
         category_label.grid(row=2, column=0, padx=5, pady=5, sticky="w")
 
-        category_value = ctk.CTkLabel(section1_frame, text="EBT - Enterprise Based Training", font=("Arial", 14),
+        category_value = ctk.CTkLabel(section1_frame, text="CBT - Center Based Training", font=("Arial", 14),
                                       text_color="black", anchor="w")
         category_value.grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
