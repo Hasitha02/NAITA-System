@@ -329,8 +329,8 @@ custom_data = {
             "Waiter", "Waiter/Steward", "Weaver(P/ Driven Weaving Machine)", "Welder", "Wheel Alignment Technician",
             "Wood Carving Craftsman", "Wood Craftsman (Building)",
             "Wood Craftsman (Furniture)", "Wood Craftsman(Buildings)", "Wooden Craftman (Building)", "Wool Knitter"],
-    "mode": ["Mode 1", "Mode 2", "Mode 3"],
-    "NVQLevel": ["NVQ Level 1", "NVQ Level 2", "NVQ Level 3"],
+    "mode": ["ASS", "CRFT", "HVV", "NVQ", "PTC"],
+    "NVQLevel": ["NVQ 3", "NVQ 4", "NVQ 6", "Certificate"],
     "inspectorName": ["A Sivanenthiran","A. Niyas","A.A. Nimali","A.A.I.P Wickramasinghe","A.A.M. Hemachandra","A.A.M. Sifnas",
             "A.G.D. Madusanka","A.I.K Abeysekara","A.K.M.R.B Maduwanthi","A.K.M.W.J.C Karunarathna","A.L Chathuranga",
             "A.L Rizvi","A.L. Sajuhan","A.L.M. Ashraff","A.L.M. Hafrath","A.L.M. Husnee","A.L.N.N. Pathirana","A.M.G. Kumara",
@@ -387,7 +387,7 @@ def toggle_drop_out_date():
 row_index = 2
 
 # Apprentice Details
-for field_key in ["category", "district", "dateofBirth", "indexNumber"]:
+for field_key in ["category", "district", "dateOfRegistration", "indexNumber"]:
     label = ctk.CTkLabel(scrollable_frame, text=fields[field_key], font=("Arial", 15))
     label.grid(row=row_index, column=0, padx=20, pady=10, sticky="w")
 
@@ -435,7 +435,7 @@ for field_key in ["addressNo", "addressFLine", "addressLLine"]:
     row_index += 1
 
 # Gender, NIC, Telephone, NAITA ID Number, Drop Out
-for field_key in ["dateOfRegistration", "gender", "NIC", "telephoneNumber", "NAITAIDnumber", "dropOut"]:
+for field_key in ["dateofBirth", "gender", "NIC", "telephoneNumber", "NAITAIDnumber", "dropOut"]:
     label = ctk.CTkLabel(scrollable_frame, text=fields[field_key], font=("Arial", 15))
     label.grid(row=row_index, column=0, padx=20, pady=10, sticky="w")
 
@@ -602,8 +602,8 @@ def submit_form():
         messagebox.showerror("Error", "Phone number should be exactly 10 digits and numeric only.")
     elif establishment_telephone and (len(establishment_telephone) != 10 or not establishment_telephone.isdigit()):
         messagebox.showerror("Error", "Establishment phone number should be exactly 10 digits and numeric only.")
-    elif not (nic_pattern_12_digits.match(nic) or nic_pattern_9_digits_1_letter.match(nic)):
-        messagebox.showerror("Error", "NIC should be exactly 12 digits or 9 digits followed by one letter.")
+    elif nic and not (nic_pattern_12_digits.match(nic) or nic_pattern_9_digits_1_letter.match(nic)):
+        messagebox.showerror("Error", "NIC should be exactly 12 digits or 9 digits followed by one letter if entered.")
     else:
         # Confirmation dialog
         confirmed = messagebox.askyesno("Submit Form", "Are you sure you want to submit this form?")
@@ -618,6 +618,7 @@ def submit_form():
             except Exception as e:
                 messagebox.showerror("Error", f"An error occurred: {e}")
                 clear_form()
+
 
 def save_to_pdf(file_path, headers, data):
     c = pdf_canvas.Canvas(file_path, pagesize=letter)
